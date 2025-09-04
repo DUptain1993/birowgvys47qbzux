@@ -1,0 +1,48 @@
+# Core web framework
+Flask==2.3.3
+Flask-SQLAlchemy==3.0.5
+
+# Security and authentication
+Werkzeug==2.3.7
+cryptography==41.0.4
+
+# HTTP requests and APIs
+requests==2.31.0
+
+# Data processing
+python-dateutil==2.8.2
+
+# Logging and debugging
+colorlog==6.7.0
+
+# Optional: For advanced features
+# nmap scanning support
+# python-nmap==0.7.1
+
+# DNS enumeration
+dnspython==2.4.2
+
+# Subdomain enumeration (if using wordlists)
+# wordlist tools would be system-level
+
+# Threat intelligence APIs
+# These would be optional based on configuration
+# virustotal-api==1.1.0
+# abuseipdb-api==1.0.0
+
+# Development and testing
+pytest==7.4.2
+pytest-flask==1.2.0
+pytest-mock==3.11.1
+
+# Code quality
+black==23.9.1
+flake8==6.0.0
+mypy==1.5.1
+
+# Documentation
+sphinx==7.2.6
+
+# Optional: For production deployment
+gunicorn==21.2.0
+python-dotenv==1.0.0
