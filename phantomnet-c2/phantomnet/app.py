@@ -30,7 +30,7 @@ def create_app(config_name=None):
 
     # Configure logging
     logging.basicConfig(
-        level=getattr(logging, app.config['LOG_LEVEL']),
+        level=getattr(logging, app.config['LOG_LEVEL'].upper(), logging.INFO),
         format=app.config['LOG_FORMAT'],
         handlers=[
             logging.FileHandler(app.config['LOG_FILE']),
@@ -38,11 +38,9 @@ def create_app(config_name=None):
         ]
     )
 
-    # Create database tables
+    # Create database tables and initialize default data
     with app.app_context():
         db.create_all()
-
-        # Initialize default data
         _initialize_default_data()
 
     # Initialize server instance
@@ -51,10 +49,10 @@ def create_app(config_name=None):
         port=app.config['PORT']
     )
 
-    # Store server instance in app context
+    # Store server instance in app context for global access
     app.server = server
 
-    # Start background tasks
+    # Start background tasks (runs in separate thread)
     server.start_background_tasks()
 
     return app
@@ -74,11 +72,11 @@ def _initialize_default_data():
         db.session.add(admin)
         db.session.commit()
 
-    # Initialize DuckDNS configuration
+    # Initialize DuckDNS configuration if missing
     if not DuckDNSUpdater.query.first():
         duckdns = DuckDNSUpdater(
-            domain='your-domain',
-            token='your-token',
+            domain='into-the-nothingnesssss.duckdns.org',
+            token='d6d0b3fa-a957-47c5-ba7f-f17e668990cb',
             is_active=False
         )
         db.session.add(duckdns)
