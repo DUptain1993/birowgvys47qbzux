@@ -15,7 +15,8 @@ class Config:
     TESTING = False
 
     # Database configuration
-    SQLALCHEMY_DATABASE_URI = 'sqlite:///phantom_c2.db'
+    # Use DATABASE_URL env var if set, else default to SQLite file inside container
+    SQLALCHEMY_DATABASE_URI = os.getenv('DATABASE_URL', 'sqlite:///phantom_c2.db')
     SQLALCHEMY_TRACK_MODIFICATIONS = False
 
     # Server configuration
@@ -27,6 +28,7 @@ class Config:
     PERMANENT_SESSION_LIFETIME = timedelta(hours=24)
     SESSION_COOKIE_SECURE = True
     SESSION_COOKIE_HTTPONLY = True
+    SESSION_COOKIE_SAMESITE = 'Lax'
 
     # Logging configuration
     LOG_LEVEL = 'INFO'
@@ -62,9 +64,10 @@ class DevelopmentConfig(Config):
     """Development configuration"""
 
     DEBUG = True
-    SQLALCHEMY_DATABASE_URI = 'sqlite:///phantom_c2_dev.db'
+    SQLALCHEMY_DATABASE_URI = os.getenv('DATABASE_URL', 'sqlite:///phantom_c2_dev.db')
     SSL_CONTEXT = None
     SESSION_COOKIE_SECURE = False
+    SESSION_COOKIE_SAMESITE = 'Lax'
 
 class TestingConfig(Config):
     """Testing configuration"""
@@ -72,6 +75,8 @@ class TestingConfig(Config):
     TESTING = True
     SQLALCHEMY_DATABASE_URI = 'sqlite:///:memory:'
     WTF_CSRF_ENABLED = False
+    SESSION_COOKIE_SECURE = False
+    SESSION_COOKIE_SAMESITE = 'Lax'
 
 class ProductionConfig(Config):
     """Production configuration"""
