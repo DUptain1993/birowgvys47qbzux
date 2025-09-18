@@ -1,8 +1,7 @@
-"""
+```python
 Configuration settings for PhantomNet C2 Server
 """
 
-import os
 import secrets
 from datetime import timedelta
 
@@ -15,8 +14,7 @@ class Config:
     TESTING = False
 
     # Database configuration
-    # Use DATABASE_URL env var if set, else default to SQLite file inside container
-    SQLALCHEMY_DATABASE_URI = os.getenv('DATABASE_URL', 'sqlite:///phantom_c2.db')
+    SQLALCHEMY_DATABASE_URI = 'sqlite:///phantom_c2.db'
     SQLALCHEMY_TRACK_MODIFICATIONS = False
 
     # Server configuration
@@ -36,16 +34,16 @@ class Config:
     LOG_FILE = 'phantom.log'
 
     # API Keys (set via environment variables)
-    SHODAN_API_KEY = os.getenv('SHODAN_API_KEY')
-    CENSYS_API_ID = os.getenv('CENSYS_API_ID')
-    CENSYS_API_SECRET = os.getenv('CENSYS_API_SECRET')
-    VIRUSTOTAL_API_KEY = os.getenv('VIRUSTOTAL_API_KEY')
-    ABUSEIPDB_API_KEY = os.getenv('ABUSEIPDB_API_KEY')
-    OTX_API_KEY = os.getenv('OTX_API_KEY')
+    SHODAN_API_KEY = ""
+    CENSYS_API_ID = ""
+    CENSYS_API_SECRET = ""
+    VIRUSTOTAL_API_KEY = ""
+    ABUSEIPDB_API_KEY = ""
+    OTX_API_KEY = ""
 
     # C2 Server configuration
-    C2_SERVER_IP = os.getenv('C2_SERVER_IP', '127.0.0.1')
-    C2_SERVER_PORT = os.getenv('C2_SERVER_PORT', '8443')
+    C2_SERVER_IP = '3.148.91.3'
+    C2_SERVER_PORT = '8443'
 
     # Background task intervals
     BACKGROUND_TASK_INTERVAL = 300  # 5 minutes
@@ -64,7 +62,7 @@ class DevelopmentConfig(Config):
     """Development configuration"""
 
     DEBUG = True
-    SQLALCHEMY_DATABASE_URI = os.getenv('DATABASE_URL', 'sqlite:///phantom_c2_dev.db')
+    SQLALCHEMY_DATABASE_URI = 'sqlite:///phantom_c2_dev.db'
     SSL_CONTEXT = None
     SESSION_COOKIE_SECURE = False
     SESSION_COOKIE_SAMESITE = 'Lax'
@@ -82,7 +80,7 @@ class ProductionConfig(Config):
     """Production configuration"""
 
     DEBUG = False
-    SQLALCHEMY_DATABASE_URI = os.getenv('DATABASE_URL', 'sqlite:///phantom_c2.db')
+    SQLALCHEMY_DATABASE_URI = 'sqlite:///phantom_c2.db'
 
     # In production, use proper SSL certificates
     SSL_CONTEXT = ('/path/to/cert.pem', '/path/to/key.pem')
@@ -102,6 +100,7 @@ config = {
 def get_config(config_name=None):
     """Get configuration class based on environment"""
     if config_name is None:
-        config_name = os.getenv('FLASK_ENV', 'default')
+        config_name = 'default'
 
     return config.get(config_name, Config)
+```
