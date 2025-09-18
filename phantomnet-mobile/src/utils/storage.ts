@@ -40,7 +40,8 @@ export class StorageService {
     try {
       await this.setItem(STORAGE_KEYS.SERVER_CONFIG, JSON.stringify(config));
       return true;
-    } catch {
+    } catch (error) {
+      console.error('Failed to save server config:', error);
       return false;
     }
   }
@@ -49,7 +50,8 @@ export class StorageService {
     try {
       const config = await this.getItem(STORAGE_KEYS.SERVER_CONFIG);
       return config ? JSON.parse(config) : null;
-    } catch {
+    } catch (error) {
+      console.error('Failed to get server config:', error);
       return null;
     }
   }
@@ -58,7 +60,8 @@ export class StorageService {
     try {
       await this.removeItem(STORAGE_KEYS.SERVER_CONFIG);
       return true;
-    } catch {
+    } catch (error) {
+      console.error('Failed to clear server config:', error);
       return false;
     }
   }
@@ -68,48 +71,58 @@ export class StorageService {
     try {
       await this.setItem(STORAGE_KEYS.AUTH_TOKEN, token);
       return true;
-    } catch {
+    } catch (error) {
+      console.error('Failed to save auth token:', error);
       return false;
     }
   }
 
   static async getAuthToken(): Promise<string | null> {
-    return this.getItem(STORAGE_KEYS.AUTH_TOKEN);
+    try {
+      return await this.getItem(STORAGE_KEYS.AUTH_TOKEN);
+    } catch (error) {
+      console.error('Failed to get auth token:', error);
+      return null;
+    }
   }
 
   static async clearAuthToken(): Promise<boolean> {
     try {
       await this.removeItem(STORAGE_KEYS.AUTH_TOKEN);
       return true;
-    } catch {
+    } catch (error) {
+      console.error('Failed to clear auth token:', error);
       return false;
     }
   }
 
   // User Data
-  static async saveUserData(user: User): Promise<boolean> {
+  static async saveUser Data(user: User): Promise<boolean> {
     try {
       await this.setItem(STORAGE_KEYS.USER_DATA, JSON.stringify(user));
       return true;
-    } catch {
+    } catch (error) {
+      console.error('Failed to save user data:', error);
       return false;
     }
   }
 
-  static async getUserData(): Promise<User | null> {
+  static async getUser Data(): Promise<User | null> {
     try {
       const userData = await this.getItem(STORAGE_KEYS.USER_DATA);
       return userData ? JSON.parse(userData) : null;
-    } catch {
+    } catch (error) {
+      console.error('Failed to get user data:', error);
       return null;
     }
   }
 
-  static async clearUserData(): Promise<boolean> {
+  static async clearUser Data(): Promise<boolean> {
     try {
       await this.removeItem(STORAGE_KEYS.USER_DATA);
       return true;
-    } catch {
+    } catch (error) {
+      console.error('Failed to clear user data:', error);
       return false;
     }
   }
@@ -119,7 +132,8 @@ export class StorageService {
     try {
       await this.setItem(STORAGE_KEYS.THEME, theme);
       return true;
-    } catch {
+    } catch (error) {
+      console.error('Failed to save theme:', error);
       return false;
     }
   }
@@ -127,8 +141,12 @@ export class StorageService {
   static async getTheme(): Promise<'light' | 'dark' | 'auto'> {
     try {
       const theme = await this.getItem(STORAGE_KEYS.THEME);
-      return (theme as 'light' | 'dark' | 'auto') || 'auto';
-    } catch {
+      if (theme === 'light' || theme === 'dark' || theme === 'auto') {
+        return theme;
+      }
+      return 'auto';
+    } catch (error) {
+      console.error('Failed to get theme:', error);
       return 'auto';
     }
   }
@@ -138,13 +156,19 @@ export class StorageService {
     try {
       await this.setItem(STORAGE_KEYS.LAST_SYNC, timestamp);
       return true;
-    } catch {
+    } catch (error) {
+      console.error('Failed to save last sync timestamp:', error);
       return false;
     }
   }
 
   static async getLastSync(): Promise<string | null> {
-    return this.getItem(STORAGE_KEYS.LAST_SYNC);
+    try {
+      return await this.getItem(STORAGE_KEYS.LAST_SYNC);
+    } catch (error) {
+      console.error('Failed to get last sync timestamp:', error);
+      return null;
+    }
   }
 
   // Offline Data
@@ -152,7 +176,8 @@ export class StorageService {
     try {
       await this.setItem(STORAGE_KEYS.OFFLINE_DATA, JSON.stringify(data));
       return true;
-    } catch {
+    } catch (error) {
+      console.error('Failed to save offline data:', error);
       return false;
     }
   }
@@ -161,7 +186,8 @@ export class StorageService {
     try {
       const data = await this.getItem(STORAGE_KEYS.OFFLINE_DATA);
       return data ? JSON.parse(data) : null;
-    } catch {
+    } catch (error) {
+      console.error('Failed to get offline data:', error);
       return null;
     }
   }
@@ -170,7 +196,8 @@ export class StorageService {
     try {
       await this.removeItem(STORAGE_KEYS.OFFLINE_DATA);
       return true;
-    } catch {
+    } catch (error) {
+      console.error('Failed to clear offline data:', error);
       return false;
     }
   }
@@ -179,7 +206,9 @@ export class StorageService {
   static async clearAll(): Promise<boolean> {
     try {
       const keys = await AsyncStorage.getAllKeys();
-      await AsyncStorage.multiRemove(keys);
+      if (keys.length > 0) {
+        await AsyncStorage.multiRemove(keys);
+      }
       return true;
     } catch (error) {
       console.error('Failed to clear all data:', error);
@@ -202,11 +231,12 @@ export class StorageService {
         }
       }
 
-      const usedSpace = totalSize < 1024
-        ? `${totalSize} B`
-        : totalSize < 1024 * 1024
-        ? `${(totalSize / 1024).toFixed(2)} KB`
-        : `${(totalSize / (1024 * 1024)).toFixed(2)} MB`;
+      const usedSpace =
+        totalSize < 1024
+          ? `${totalSize} B`
+          : totalSize < 1024 * 1024
+          ? `${(totalSize / 1024).toFixed(2)} KB`
+          : `${(totalSize / (1024 * 1024)).toFixed(2)} MB`;
 
       return {
         totalKeys: keys.length,
