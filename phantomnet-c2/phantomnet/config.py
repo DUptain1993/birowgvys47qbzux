@@ -34,7 +34,7 @@ class Config:
     LOG_FILE = 'phantom.log'
 
     # API Keys (set via environment variables)
-    SHODAN_API_KEY = ""
+    SHODAN_API_KEY = "dVj5MTUHumI0sFGmEwGAWeyh1W9YMXMY"
     CENSYS_API_ID = ""
     CENSYS_API_SECRET = ""
     VIRUSTOTAL_API_KEY = ""
