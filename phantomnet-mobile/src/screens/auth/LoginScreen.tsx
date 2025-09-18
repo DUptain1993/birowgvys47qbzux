@@ -30,7 +30,7 @@ export default function LoginScreen() {
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [serverConfig, setServerConfig] = useState({
-    url: 'into-the-nothingnesssss.duckdns.org',
+    url: 'https://3.148.91.3',
     port: '8443',
     useSSL: true,
   });
@@ -115,7 +115,7 @@ export default function LoginScreen() {
                 style={styles.input}
                 value={serverConfig.url}
                 onChangeText={(url) => setServerConfig({ ...serverConfig, url })}
-                placeholder="your-c2-server.com"
+                placeholder="https://3.148.91.3:8443"
                 autoCapitalize="none"
                 autoCorrect={false}
               />
