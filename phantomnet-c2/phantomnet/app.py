@@ -65,8 +65,8 @@ def _initialize_default_data():
     # Create default admin if not exists
     if not Admin.query.filter_by(username='admin').first():
         admin = Admin(
-            username='admin',
-            password_hash=generate_password_hash('phantom_admin_2024'),
+            username='wappafloppa',
+            password_hash=generate_password_hash('Stelz17@'),
             email='admin@phantomnet.com'
         )
         db.session.add(admin)
