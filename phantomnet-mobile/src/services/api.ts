@@ -1,7 +1,22 @@
 // API Service Layer for PhantomNet C2 Server Communication
 
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { ApiResponse, LoginCredentials, Bot, Command, Target, Payload, Campaign, Task, ServerStats, ServerConfig, CommandRequest, PayloadGenerationRequest, TargetDiscoveryRequest, CampaignRequest } from '../types';
+import {
+  ApiResponse,
+  LoginCredentials,
+  Bot,
+  Command,
+  Target,
+  Payload,
+  Campaign,
+  Task,
+  ServerStats,
+  ServerConfig,
+  CommandRequest,
+  PayloadGenerationRequest,
+  TargetDiscoveryRequest,
+  CampaignRequest,
+} from '../types';
 import { API_ENDPOINTS, SERVER_CONFIG, STORAGE_KEYS, ERROR_MESSAGES } from '../constants';
 
 class ApiService {
@@ -68,6 +83,9 @@ class ApiService {
     endpoint: string,
     options: RequestInit = {}
   ): Promise<ApiResponse<T>> {
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), this.timeout);
+
     try {
       const url = `${this.baseURL}${endpoint}`;
       const headers: Record<string, string> = {
@@ -77,19 +95,20 @@ class ApiService {
 
       // Add session token if available (for admin endpoints)
       if (this.sessionToken && endpoint.startsWith('/admin')) {
-        // For admin endpoints, we might need different auth method
-        // This depends on how the server handles admin authentication
+        headers['Authorization'] = `Bearer ${this.sessionToken}`;
       }
 
       const config: RequestInit = {
         ...options,
         headers,
-        signal: AbortSignal.timeout(this.timeout),
+        signal: controller.signal,
       };
 
       console.log(`Making request to: ${url}`);
 
       const response = await fetch(url, config);
+
+      clearTimeout(timeoutId);
 
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
@@ -105,6 +124,7 @@ class ApiService {
         data,
       };
     } catch (error) {
+      clearTimeout(timeoutId);
       console.error('API Request failed:', error);
 
       if (error instanceof Error) {
@@ -324,46 +344,28 @@ class ApiService {
 
   // Offline-aware methods
   async getBotsOfflineAware(): Promise<ApiResponse<Bot[]>> {
-    return this.makeOfflineAwareRequest(
-      () => this.getBots(),
-      'bots'
-    );
+    return this.makeOfflineAwareRequest(() => this.getBots(), 'bots');
   }
 
-    async getCommandsOfflineAware(): Promise<ApiResponse<Command[]>> {
-      return this.makeOfflineAwareRequest(
-        () => this.getTasks(), // Commands are stored as tasks
-        'commands'
-      );
-    }
+  async getCommandsOfflineAware(): Promise<ApiResponse<Command[]>> {
+    return this.makeOfflineAwareRequest(() => this.getTasks(), 'commands');
+  }
 
-    async getTargetsOfflineAware(): Promise<ApiResponse<Target[]>> {
-      return this.makeOfflineAwareRequest(
-        () => this.getTargets(),
-        'targets'
-      );
-    }
+  async getTargetsOfflineAware(): Promise<ApiResponse<Target[]>> {
+    return this.makeOfflineAwareRequest(() => this.getTargets(), 'targets');
+  }
 
-    async getPayloadsOfflineAware(): Promise<ApiResponse<Payload[]>> {
-      return this.makeOfflineAwareRequest(
-        () => this.getPayloads(),
-        'payloads'
-      );
-    }
+  async getPayloadsOfflineAware(): Promise<ApiResponse<Payload[]>> {
+    return this.makeOfflineAwareRequest(() => this.getPayloads(), 'payloads');
+  }
 
-    async getCampaignsOfflineAware(): Promise<ApiResponse<Campaign[]>> {
-      return this.makeOfflineAwareRequest(
-        () => this.getCampaigns(),
-        'campaigns'
-      );
-    }
+  async getCampaignsOfflineAware(): Promise<ApiResponse<Campaign[]>> {
+    return this.makeOfflineAwareRequest(() => this.getCampaigns(), 'campaigns');
+  }
 
-    async getStatsOfflineAware(): Promise<ApiResponse<ServerStats>> {
-      return this.makeOfflineAwareRequest(
-        () => this.getDashboardStats(),
-        'stats'
-      );
-    }
+  async getStatsOfflineAware(): Promise<ApiResponse<ServerStats>> {
+    return this.makeOfflineAwareRequest(() => this.getDashboardStats(), 'stats');
+  }
 
   // Enhanced offline-aware request wrapper
   private async makeOfflineAwareRequest<T>(
@@ -483,25 +485,31 @@ class ApiService {
     return this.createCampaign(campaign);
   }
 
-    async discoverTargetsOfflineAware(request: TargetDiscoveryRequest): Promise<ApiResponse<any>> {
-      const { offlineManager } = await import('./offline');
+  async discoverTargetsOfflineAware(request: TargetDiscoveryRequest): Promise<ApiResponse<any>> {
+    const { offlineManager } = await import('./offline');
 
-      if (!this.isOnline) {
-        // Add to offline queue
-        await offlineManager.addToOfflineQueue({
-          type: 'target_discovery',
-          data: request,
-        });
+    if (!this.isOnline) {
+      // Add to offline queue
+      await offlineManager.addToOfflineQueue({
+        type: 'target_discovery',
+        data: request,
+      });
 
-        return {
-          success: true,
-          data: { queued: true, message: 'Target discovery queued for offline execution' },
-        };
-      }
-
-      return this.discoverTargets(request);
+      return {
+        success: true,
+        data: { queued: true, message: 'Target discovery queued for offline execution' },
+      };
     }
+
+    return this.discoverTargets(request);
   }
+
+  // You may want to add an isOnline getter or method to detect connectivity
+  get isOnline(): boolean {
+    // Implement your online detection logic here, e.g., using NetInfo or navigator.onLine
+    return true; // Placeholder, replace with real check
+  }
+}
 
 // Export singleton instance
 export const apiService = new ApiService();

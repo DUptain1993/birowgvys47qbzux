@@ -82,8 +82,9 @@ class OfflineManager {
   // Data Caching Methods
   private async loadCachedData(): Promise<void> {
     try {
-      const cached = await storageService.getData(STORAGE_KEYS.OFFLINE_DATA);
-      if (cached) {
+      const cachedJson = await storageService.getItem(STORAGE_KEYS.OFFLINE_DATA);
+      if (cachedJson) {
+        const cached = JSON.parse(cachedJson);
         this.cachedData = { ...this.cachedData, ...cached };
       }
     } catch (error) {
@@ -93,7 +94,7 @@ class OfflineManager {
 
   private async saveCachedData(): Promise<void> {
     try {
-      await storageService.storeData(STORAGE_KEYS.OFFLINE_DATA, this.cachedData);
+      await storageService.setItem(STORAGE_KEYS.OFFLINE_DATA, JSON.stringify(this.cachedData));
     } catch (error) {
       console.error('Failed to save cached data:', error);
     }
@@ -121,9 +122,12 @@ class OfflineManager {
   // Offline Queue Management
   private async loadOfflineQueue(): Promise<void> {
     try {
-      const queue = await storageService.getData('offline_queue');
-      if (queue && Array.isArray(queue)) {
-        this.offlineQueue = queue;
+      const queueJson = await storageService.getItem('offline_queue');
+      if (queueJson) {
+        const queue = JSON.parse(queueJson);
+        if (Array.isArray(queue)) {
+          this.offlineQueue = queue;
+        }
       }
     } catch (error) {
       console.error('Failed to load offline queue:', error);
@@ -132,7 +136,7 @@ class OfflineManager {
 
   private async saveOfflineQueue(): Promise<void> {
     try {
-      await storageService.storeData('offline_queue', this.offlineQueue);
+      await storageService.setItem('offline_queue', JSON.stringify(this.offlineQueue));
     } catch (error) {
       console.error('Failed to save offline queue:', error);
     }

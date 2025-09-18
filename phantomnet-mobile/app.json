@@ -1,7 +1,7 @@
 {
   "expo": {
     "name": "phantomnet-mobile",
-    "slug": "phantomnet-mobile",
+    "slug": "phantomc2",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
@@ -20,10 +20,19 @@
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#ffffff"
       },
-      "edgeToEdgeEnabled": true
+      "edgeToEdgeEnabled": true,
+      "package": "com.c2.android"
     },
     "web": {
       "favicon": "./assets/favicon.png"
-    }
+    },
+    "extra": {
+      "eas": {
+        "projectId": "283967e4-34e9-40a8-972d-0a07177aa031"
+      }
+    },
+    "plugins": [
+      "expo-font"
+    ]
   }
 }
