@@ -12,6 +12,21 @@ import subprocess
 import shutil
 from typing import List, Dict, Any
 
+# Optional imports with fallbacks
+try:
+    import nmap
+    NMAP_AVAILABLE = True
+except ImportError:
+    NMAP_AVAILABLE = False
+    logging.warning("python-nmap not available. Network scanning will be limited.")
+
+try:
+    import dns.resolver
+    DNS_AVAILABLE = True
+except ImportError:
+    DNS_AVAILABLE = False
+    logging.warning("dnspython not available. DNS enumeration will be limited.")
+
 logger = logging.getLogger(__name__)
 
 class TargetDiscovery:

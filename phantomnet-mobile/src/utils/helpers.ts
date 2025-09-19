@@ -1,6 +1,6 @@
 // Utility helper functions for PhantomNet Mobile App
 
-import { Alert } from 'react-native';
+import { Alert, Platform } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { STORAGE_KEYS } from '../constants';
 
@@ -202,9 +202,6 @@ export const isIOS = (): boolean => {
 export const isAndroid = (): boolean => {
   return Platform.OS === 'android';
 };
-
-// Import Platform from react-native
-import { Platform } from 'react-native';
 
 // Export platform-specific functions
 export { Platform };

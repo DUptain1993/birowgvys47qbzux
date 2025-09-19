@@ -7,6 +7,21 @@ import logging
 import requests
 from typing import List, Dict, Any
 
+# Optional imports with fallbacks
+try:
+    from virustotal_api import VirusTotalAPI
+    VIRUSTOTAL_AVAILABLE = True
+except ImportError:
+    VIRUSTOTAL_AVAILABLE = False
+    logging.warning("virustotal-api not available. VirusTotal integration will be limited.")
+
+try:
+    from abuseipdb import AbuseIPDB
+    ABUSEIPDB_AVAILABLE = True
+except ImportError:
+    ABUSEIPDB_AVAILABLE = False
+    logging.warning("abuseipdb not available. AbuseIPDB integration will be limited.")
+
 logger = logging.getLogger(__name__)
 
 class ThreatIntelligence:

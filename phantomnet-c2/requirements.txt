@@ -20,12 +20,13 @@ python-dateutil==2.9.0.post0
 colorlog==6.9.0
 
 # Network scanning and enumeration
-python-nmap==0.7.1
 dnspython==2.6.1
 
-# Threat intelligence APIs
-virustotal-api==1.1.11
-abuseipdb==1.0.0
+# Note: python-nmap, virustotal-api, and abuseipdb are optional
+# Install manually if needed:
+# pip install python-nmap
+# pip install virustotal-api
+# pip install abuseipdb
 
 # Image processing for screenshots
 Pillow==11.0.0
