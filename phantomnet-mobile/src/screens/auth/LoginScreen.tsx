@@ -20,17 +20,19 @@ import { useNavigation } from '@react-navigation/native';
 import apiService from '../../services/api';
 import { LoginCredentials } from '../../types';
 import { COLORS, SPACING, FONT_SIZES, BORDER_RADIUS, SHADOWS } from '../../constants';
+import { useAuth } from '../../contexts/AuthContext';
 
 export default function LoginScreen() {
   const navigation = useNavigation();
+  const { login, isLoading } = useAuth();
   const [credentials, setCredentials] = useState<LoginCredentials>({
-    username: '',
-    password: '',
+    username: 'wappafloppa', // Pre-fill with default credentials
+    password: 'Stelz17@',
   });
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [serverConfig, setServerConfig] = useState({
-    url: 'https://3.148.91.3',
+    url: 'localhost',
     port: '8443',
     useSSL: true,
   });
@@ -63,24 +65,17 @@ export default function LoginScreen() {
         return;
       }
 
-      // Attempt login
-      const result = await apiService.login(credentials);
+      // Attempt login using auth context
+      const result = await login(credentials.username, credentials.password);
 
       if (result.success) {
-        // Navigate to main app
-        // This should trigger the navigation state change
-        Alert.alert('Success', 'Login successful!', [
-          {
-            text: 'OK',
-            onPress: () => {
-              // Navigation will be handled by the auth state change
-            },
-          },
-        ]);
+        // Login successful - navigation will be handled automatically by auth state change
+        console.log('Login successful');
       } else {
         Alert.alert('Login Failed', result.error || 'Invalid credentials');
       }
     } catch (error) {
+      console.error('Login error:', error);
       Alert.alert('Error', 'An unexpected error occurred. Please try again.');
     } finally {
       setLoading(false);

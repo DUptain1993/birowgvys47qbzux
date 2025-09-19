@@ -509,6 +509,16 @@ class ApiService {
     // Implement your online detection logic here, e.g., using NetInfo or navigator.onLine
     return true; // Placeholder, replace with real check
   }
+
+  // SSL Certificate handling for development
+  private getRequestOptions(options: RequestInit = {}): RequestInit {
+    // For development, we might need to handle self-signed certificates
+    // In production, this should be removed and proper certificates should be used
+    return {
+      ...options,
+      // Add any additional options for SSL handling if needed
+    };
+  }
 }
 
 // Export singleton instance

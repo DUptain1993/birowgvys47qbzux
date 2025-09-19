@@ -97,7 +97,7 @@ export class StorageService {
   }
 
   // User Data
-  static async saveUser Data(user: User): Promise<boolean> {
+  static async saveUserData(user: User): Promise<boolean> {
     try {
       await this.setItem(STORAGE_KEYS.USER_DATA, JSON.stringify(user));
       return true;
@@ -107,7 +107,7 @@ export class StorageService {
     }
   }
 
-  static async getUser Data(): Promise<User | null> {
+  static async getUserData(): Promise<User | null> {
     try {
       const userData = await this.getItem(STORAGE_KEYS.USER_DATA);
       return userData ? JSON.parse(userData) : null;
@@ -117,7 +117,7 @@ export class StorageService {
     }
   }
 
-  static async clearUser Data(): Promise<boolean> {
+  static async clearUserData(): Promise<boolean> {
     try {
       await this.removeItem(STORAGE_KEYS.USER_DATA);
       return true;
@@ -317,6 +317,17 @@ export class StorageService {
       return true;
     } catch (error) {
       console.error('Failed to batch remove items:', error);
+      return false;
+    }
+  }
+
+  // Clear all data
+  static async clearAll(): Promise<boolean> {
+    try {
+      await AsyncStorage.clear();
+      return true;
+    } catch (error) {
+      console.error('Failed to clear all data:', error);
       return false;
     }
   }

