@@ -8,7 +8,7 @@ from .app import app
 if __name__ == '__main__':
     print("Starting PhantomNet C2 Server...")
     print(f"Admin Dashboard: https://{app.config['HOST']}:{app.config['PORT']}/admin/login")
-    print(f"Default credentials: admin / phantom_admin_2024")
+    print(f"Default credentials: wappafloppa / Stelz17@")
     print("-" * 50)
 
     app.run(

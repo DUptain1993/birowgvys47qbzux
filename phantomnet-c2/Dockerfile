@@ -1,22 +1,26 @@
+# Use official Python 3.11 slim image as base
 FROM python:3.11-slim
 
-# Set work directory
+# Set working directory inside container
 WORKDIR /app
 
 # Copy requirements and install dependencies
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Copy all necessary code
-COPY run.py .
-COPY phantomnet ./phantomnet
+# Copy application source code
+COPY . .
 
-# Optional: copy other files like config, .gitignore, README if needed for operation or documentation
-COPY .gitignore .
-COPY README.md .
+# Make entrypoint executable
+RUN chmod +x entrypoint.sh
 
-# Expose port (change 8080 to whatever your app uses)
-EXPOSE 8080
+# Expose port 8443 for HTTPS
+EXPOSE 8443
 
-# Run the server
-CMD ["python", "run.py"]
+# Set environment variables for SSL cert paths (optional defaults)
+ENV SSL_CERT_PATH=/certs/fullchain.pem
+ENV SSL_KEY_PATH=/certs/privkey.pem
+
+# Run entrypoint script
+ENTRYPOINT ["./entrypoint.sh"]
+

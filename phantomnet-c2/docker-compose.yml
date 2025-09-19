@@ -1,0 +1,14 @@
+version: '3.8'
+
+services:
+  phantomnet:
+    build: .
+    image: mrfkry93/phantomnet-c2:v1.3
+    ports:
+      - "8443:8443"
+    volumes:
+      - /home/ubuntu/certs:/certs:ro
+    environment:
+      SSL_CERT_PATH: /certs/fullchain.pem
+      SSL_KEY_PATH: /certs/privkey.pem
+    restart: unless-stopped

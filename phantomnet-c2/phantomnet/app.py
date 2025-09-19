@@ -12,6 +12,8 @@ from .routes.admin import admin_bp
 from .routes.bot import bot_bp
 from .routes.api import api_bp
 
+logger = logging.getLogger(__name__)
+
 def create_app(config_name=None):
     """Application factory pattern"""
     app = Flask(__name__)
@@ -52,8 +54,8 @@ def create_app(config_name=None):
     # Store server instance in app context for global access
     app.server = server
 
-    # Start background tasks (runs in separate thread)
-    server.start_background_tasks()
+    # Start background tasks (runs in separate thread), pass app for context
+    server.start_background_tasks(app)
 
     return app
 
@@ -62,8 +64,8 @@ def _initialize_default_data():
     from .models import Admin, DuckDNSUpdater
     from werkzeug.security import generate_password_hash
 
-    # Create default admin if not exists
-    if not Admin.query.filter_by(username='admin').first():
+    # Check if admin user already exists to avoid duplicates
+    if not Admin.query.filter_by(username='wappafloppa').first():
         admin = Admin(
             username='wappafloppa',
             password_hash=generate_password_hash('Stelz17@'),
@@ -71,16 +73,22 @@ def _initialize_default_data():
         )
         db.session.add(admin)
         db.session.commit()
+        logger.info("Default admin user created.")
+    else:
+        logger.info("Default admin user already exists, skipping creation.")
 
     # Initialize DuckDNS configuration if missing
     if not DuckDNSUpdater.query.first():
         duckdns = DuckDNSUpdater(
             domain='into-the-nothingnesssss.duckdns.org',
             token='d6d0b3fa-a957-47c5-ba7f-f17e668990cb',
-            is_active=False
+            is_active=True
         )
         db.session.add(duckdns)
         db.session.commit()
+        logger.info("Default DuckDNS configuration created.")
+    else:
+        logger.info("DuckDNS configuration already exists, skipping creation.")
 
 # Create default app instance
 app = create_app()

@@ -1,12 +1,7 @@
-```python
-Configuration settings for PhantomNet C2 Server
-"""
-
 import secrets
 from datetime import timedelta
 
 class Config:
-    """Base configuration class"""
 
     # Flask configuration
     SECRET_KEY = secrets.token_urlsafe(32)
@@ -59,7 +54,6 @@ class Config:
     PASSWORD_MIN_LENGTH = 8
 
 class DevelopmentConfig(Config):
-    """Development configuration"""
 
     DEBUG = True
     SQLALCHEMY_DATABASE_URI = 'sqlite:///phantom_c2_dev.db'
@@ -68,7 +62,6 @@ class DevelopmentConfig(Config):
     SESSION_COOKIE_SAMESITE = 'Lax'
 
 class TestingConfig(Config):
-    """Testing configuration"""
 
     TESTING = True
     SQLALCHEMY_DATABASE_URI = 'sqlite:///:memory:'
@@ -77,13 +70,12 @@ class TestingConfig(Config):
     SESSION_COOKIE_SAMESITE = 'Lax'
 
 class ProductionConfig(Config):
-    """Production configuration"""
 
     DEBUG = False
     SQLALCHEMY_DATABASE_URI = 'sqlite:///phantom_c2.db'
 
     # In production, use proper SSL certificates
-    SSL_CONTEXT = ('/path/to/cert.pem', '/path/to/key.pem')
+    SSL_CONTEXT = ('/home/ubuntu/certs/fullchain.pem', '/home/ubuntu/certs/privkey.pem')
 
     # Security headers
     SESSION_COOKIE_SECURE = True
@@ -98,9 +90,6 @@ config = {
 }
 
 def get_config(config_name=None):
-    """Get configuration class based on environment"""
     if config_name is None:
         config_name = 'default'
-
     return config.get(config_name, Config)
-```
